@@ -1,5 +1,5 @@
-#ifndef _MSG_SOCKETS_
-#define _MSG_SOCKETS_
+#ifndef SOCKETS_H
+#define SOCKETS_H
 
 #include "list.h"
 
