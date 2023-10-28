@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <arpa/inet.h>
 
 #define PORT 5002
 #define ADRESS "89.223.123.237"
@@ -16,6 +17,7 @@ int send_to_all(int socks[], size_t socks_num, char *msg);
 int recv_messages(int socks[], size_t socks_num, char *msg);
 int run_server(int server_sock);
 int remove_closed_sockets(int socks[], size_t socks_num);
+char *get_socket_name(int sock);
 
 int main()
 {
@@ -88,11 +90,16 @@ int send_to_all(int socks[], size_t socks_num, char *msg)
 int recv_messages(int socks[], size_t socks_num, char *msg)
 {
 	int i;
+	char tmp_buf[MAX_BUF] = {};
+	const int MAX_IP_LEN = 16;
     for (i = 0; i < socks_num; i++) {
         if (socks[i] == -1) continue;
-        int bytes_read = recv(socks[i], msg, MAX_BUF - 1, 0);
+        int bytes_read = recv(socks[i], tmp_buf, MAX_BUF - MAX_IP_LEN, 0);
         if (bytes_read > 0) {
-            msg[bytes_read] = '\0';
+        	strcpy(msg, "[");
+        	strncat(msg, get_socket_name(socks[i]), MAX_IP_LEN);
+        	strcat(msg, "] ");
+        	strncat(msg, tmp_buf, MAX_BUF - MAX_IP_LEN);
             return 0;
         }
     }
@@ -110,4 +117,12 @@ int remove_closed_sockets(int socks[], size_t socks_num)
 		}
 	}
 	return 0;
+}
+
+char *get_socket_name(int sock)
+{
+	struct sockaddr_in ip;
+	socklen_t ip_len = sizeof(struct sockaddr_in);
+	getpeername(sock, (struct sockaddr*) &ip, &ip_len);
+	return inet_ntoa(ip.sin_addr);
 }
