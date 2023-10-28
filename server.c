@@ -10,11 +10,10 @@
 #define ADRESS "89.223.123.237"
 #define MAX_COUNT_SOCKS 100
 #define MAX_BUF 1024
-#define POISON_ACCEPT -1
 
 int open_server_socket(int *server_sock);
-int send_to_all(int socks[], size_t socks_num, char *msg, size_t msg_len);
-int recv_messages(int socks[], size_t socks_num, char *msg, size_t *msg_len);
+int send_to_all(int socks[], size_t socks_num, char *msg);
+int recv_messages(int socks[], size_t socks_num, char *msg);
 int run_server(int server_sock);
 int remove_closed_sockets(int socks[], size_t socks_num);
 
@@ -45,12 +44,10 @@ int run_server(int server_sock)
 		}
 
 		char msg_buf[MAX_BUF] = "";
-		size_t msg_len = MAX_BUF;
-		int recv_status = recv_messages(client_socks, client_socks_num,
-										msg_buf, &msg_len);
+		int recv_status = recv_messages(client_socks, client_socks_num, msg_buf);
 		if(recv_status == 0) {
-			printf("message(%lu): %.*s\n", msg_len, msg_len, msg_buf);
-			send_to_all(client_socks, client_socks_num, msg_buf, msg_len);
+			printf("message: %s\n", msg_buf);
+			send_to_all(client_socks, client_socks_num, msg_buf);
 		}
 
 		remove_closed_sockets(client_socks, client_socks_num);
@@ -78,27 +75,24 @@ int open_server_socket(int *server_sock)
     return 0;
 }
 
-int send_to_all(int socks[], size_t socks_num, char *msg, size_t msg_len)
+int send_to_all(int socks[], size_t socks_num, char *msg)
 {
 	int i;
-    for (i = 0; i < socks_num; i++) {
-        if (socks[i] == -1) continue;
-        send(socks[i], msg, msg_len, 0);
-    }
-    return 0;
+	for (i = 0; i < socks_num; i++) {
+		if (socks[i] == -1) continue;
+		send(socks[i], msg, strlen(msg), 0);
+	}
+	return 0;
 }
 	
-int recv_messages(int socks[], size_t socks_num,
-				  char *msg, size_t *msg_len)
+int recv_messages(int socks[], size_t socks_num, char *msg)
 {
 	int i;
     for (i = 0; i < socks_num; i++) {
         if (socks[i] == -1) continue;
-        int bytes_read = recv(socks[i], msg, *msg_len - 1, 0);
-        *msg_len = 0;
+        int bytes_read = recv(socks[i], msg, MAX_BUF - 1, 0);
         if (bytes_read > 0) {
             msg[bytes_read] = '\0';
-            *msg_len = bytes_read;
             return 0;
         }
     }
