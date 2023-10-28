@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'client.ui'
+# Form implementation generated from reading ui file 'client_src/client.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.10
 #
@@ -14,18 +14,18 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 600)
+        MainWindow.resize(563, 452)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.chat = QtWidgets.QTextEdit(self.centralwidget)
-        self.chat.setGeometry(QtCore.QRect(23, 29, 711, 331))
+        self.chat.setGeometry(QtCore.QRect(23, 29, 511, 331))
         self.chat.setReadOnly(True)
         self.chat.setObjectName("chat")
         self.enter = QtWidgets.QTextEdit(self.centralwidget)
-        self.enter.setGeometry(QtCore.QRect(23, 410, 591, 70))
+        self.enter.setGeometry(QtCore.QRect(20, 390, 401, 41))
         self.enter.setObjectName("enter")
         self.send = QtWidgets.QPushButton(self.centralwidget)
-        self.send.setGeometry(QtCore.QRect(640, 414, 91, 61))
+        self.send.setGeometry(QtCore.QRect(440, 390, 91, 41))
         self.send.setObjectName("send")
         MainWindow.setCentralWidget(self.centralwidget)
 
@@ -36,3 +36,4 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.send.setText(_translate("MainWindow", "Отправить"))
+        self.send.setShortcut(_translate("MainWindow", "Ctrl+Return"))
