@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -7,61 +6,7 @@
 #include <fcntl.h>
 #include <arpa/inet.h>
 
-#define PORT 5002
-#define ADRESS "89.223.123.237"
-#define MAX_COUNT_SOCKS 100
-#define MAX_BUF 1024
-
-typedef struct _List {
-	int x;
-	struct _List *next;
-} List ;
-
-List *list_insert(List *head, int x);
-List *list_delete(List *head, int x);
-int list_count(List *head);
-
-int open_server_socket(int *server_sock);
-int send_to_all(List *socks, char *msg);
-int recv_messages(List *socks, char *msg);
-int run_server(int server_sock);
-List *remove_closed_sockets(List *socks);
-char *get_socket_name(int sock);
-
-int main()
-{
-	int server_sock = 0;
-	open_server_socket(&server_sock);
-	run_server(server_sock);
-	close(server_sock);
-
-	return 0;
-}
-
-List *list_insert(List *head, int x)
-{
-	List *new = (List *) malloc(sizeof(List));
-	if (!new) return NULL;
-	*new = (List) {x, head};
-	return new;
-}
-
-List *list_delete(List *head, int x)
-{
-	if (!head) return NULL;
-	if (head->x == x) {
-		List *new = head->next;
-		free(head);
-		return new;
-	}
-	return head->next = list_delete(head->next, x);
-}
-
-int list_count(List *head)
-{
-	if (!head) return 0;
-	return list_count(head->next) + 1;
-}
+#include "sockets.h"
 
 int run_server(int server_sock)
 {
