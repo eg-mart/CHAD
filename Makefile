@@ -1,4 +1,7 @@
-FILES = $(wildcard *.c)
+VPATH = client_src server_src
+
+FILE_PATHS = $(wildcard server_src/*.c)
+FILES = $(FILE_PATHS:server_src/%=%)
 OBJECTS_DIR = build
 OBJECTS_NAMES = $(FILES:.c=.o)
 OBJECTS = $(addprefix $(OBJECTS_DIR)/, $(OBJECTS_NAMES))
