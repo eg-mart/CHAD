@@ -8,6 +8,13 @@
 
 #include "sockets.h"
 
+#define PORT 5002
+#define ADRESS "89.223.123.237"
+#define MAX_COUNT_SOCKS 1000
+#define MAX_BUF 5000
+#define MAX_IP_LEN 16
+#define POISON_NAME "UNKNOWN"
+
 int run_server(int server_sock)
 {
 	listen(server_sock, 1);
@@ -56,7 +63,7 @@ int send_to_all(List *socks, char *msg)
 {
 	List *sock = NULL;
 	for (sock = socks; sock != NULL; sock = sock->next)
-		send(sock->x, msg, strlen(msg), 0);
+		send(sock->client_sock, msg, strlen(msg), 0);
 	return 0;
 }
 	
@@ -64,14 +71,21 @@ int recv_messages(List *socks, char *msg)
 {
 	int i;
 	char tmp_buf[MAX_BUF] = {};
-	const int MAX_IP_LEN = 16;
 	List *sock = NULL;
 	for (sock = socks; sock != NULL; sock = sock->next) {
-		int bytes_read = recv(sock->x, tmp_buf, MAX_BUF - MAX_IP_LEN, 0);
+		int bytes_read = recv(sock->client_sock, tmp_buf, MAX_BUF - MAX_IP_LEN, 0);
+		if (bytes_read > 0 && strcmp(sock->client_name, POISON_NAME) == 0) {
+			strcpy(sock->client_name, tmp_buf); 
+			strcpy(msg, "New user added: ");
+			strcat(msg, sock->client_name);
+			return 0; 
+		}
 		if (bytes_read > 0) {
 			strcpy(msg, "[");
-			strncat(msg, get_socket_name(sock->x), MAX_IP_LEN);
+			strncat(msg, get_socket_name(sock->client_sock), MAX_IP_LEN);
 			strcat(msg, "] ");
+			strcat(msg, sock->client_name);
+			strcat(msg, ": ");
 			strncat(msg, tmp_buf, MAX_BUF - MAX_IP_LEN);
 			return 0;
 		}
@@ -83,12 +97,17 @@ List *remove_closed_sockets(List *socks)
 {
 	List *sock = socks;
 	while (sock != NULL) {
-		int status = recv(sock->x, NULL, 1, MSG_PEEK | MSG_DONTWAIT);
+		int status = recv(sock->client_sock, NULL, 1, MSG_PEEK | MSG_DONTWAIT);
 		if (status == 0) {
+			char rmv_buf[MAX_NAME] = "";
+			strcpy(rmv_buf, "User left: ");
+			strcat(rmv_buf, sock->client_name);
+			printf("%s\n", rmv_buf);
 			List *del_sock = sock;
 			sock = sock->next;
-			close(del_sock->x);
-			socks = list_delete(socks, del_sock->x);
+			close(del_sock->client_sock);
+			socks = list_delete(socks, del_sock->client_sock);
+			send_to_all(socks, rmv_buf);
 			continue;
 		}
 		sock = sock->next;
